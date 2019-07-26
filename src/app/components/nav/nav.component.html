@@ -1,0 +1,15 @@
+<ul class="nav nav-tabs justify-content-center">
+  <li class="nav-item">
+    <a class="nav-link"
+       [routerLinkActive]="['active','pretty']"
+       [routerLink]="['home']">Home</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link"
+       [routerLinkActive]="['active','pretty']"
+       [routerLink]="['todo-list']">Todos</a>
+  </li>
+</ul>
+<div class="col">
+  <router-outlet></router-outlet>
+</div>
