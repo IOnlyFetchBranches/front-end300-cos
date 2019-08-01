@@ -1,0 +1,8 @@
+<div *ngIf="$showing | async"
+     class="div alert alert-{{$type | async}}"
+     role="alert">
+  {{$message | async}}
+  <button style="float: right;"
+          class="button btn btn-drk"
+          (click)="dismissAlert()">XXXXS</button>
+</div>

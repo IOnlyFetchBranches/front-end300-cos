@@ -1,0 +1,42 @@
+<div class="form-group">
+  <label for="name">Insert Name</label>
+  <input id="name"
+         class="form-control"
+         #name>
+  <input type="button"
+         class="btn btn-primary"
+         value="Add"
+         (click)="add(name)" />
+</div>
+<div class="assignment-panel">
+  <div class="taskview">
+    <button class="btn btn-dark"
+            style="margin: 1px;"
+            *ngFor="let task of $unassigned | async">
+      {{task.description}}
+    </button>
+  </div>
+  <div class="div">
+    <div class="card col-md-4"
+         *ngFor='let person of $peoples | async'>
+      <h1>{{person.name}}</h1>
+      <p>
+        {{person.name}} has {{getTotalTasksForPerson(person.name) | async}} tasks,
+        {{getTotalCompletedTasksForPerson(person.name) | async}} completed.
+      </p>
+      <ol>
+        <li *ngFor="let task of getTasksForPerson(person.name) | async">
+          {{task.task.description}}
+        </li>
+        <!--I feel like angular forms would have been useful for this, how else to get specific picked option PER person-->
+        <select (change)="selectOption(person.name, $event.target.value)">
+          <option *ngFor="let task of $unassigned | async"
+                  value={{task.id}}>{{task.description}}</option>
+        </select>
+        <button class="btn btn-primary"
+                (click)="assignTask(person.name)">Assign</button>
+
+      </ol>
+    </div>
+  </div>
+</div>

@@ -3,6 +3,8 @@ import * as fromList from './list.reducer';
 import * as fromCompleted from './completed.reducer';
 import * as fromFilter from './filter.reducer';
 import * as fromUiHints from './ui-hints.reducer';
+import * as fromPeople from './people.reducer';
+import * as fromAssignments from './assignments.reducer';
 import { createSelector, createFeatureSelector, ActionReducerMap } from '@ngrx/store';
 import { CompileNgModuleSummary } from '@angular/compiler';
 import { ListItemModel } from '../models';
@@ -11,6 +13,8 @@ export interface TodosState {
   completed: fromCompleted.CompletedState;
   filter: fromFilter.FilterState;
   uiHints: fromUiHints.UiHintsState;
+  people: fromPeople.PeopleState;
+  assignments: fromAssignments.AssignmentsState;
 }
 
 export const reducers: ActionReducerMap<TodosState> = {
@@ -18,6 +22,8 @@ export const reducers: ActionReducerMap<TodosState> = {
   completed: fromCompleted.reducer,
   filter: fromFilter.reducer,
   uiHints: fromUiHints.reducer,
+  people: fromPeople.reducer,
+  assignments: fromAssignments.reducer,
 };
 
 // Convention to put Selectors here (in the index file for reducers)
@@ -35,11 +41,19 @@ const selectListBranch = createSelector(selectTodosFeatures, f => f.list);
 const selectCompletedBranch = createSelector(selectTodosFeatures, f => f.completed);
 const selectFilterBranch = createSelector(selectTodosFeatures, f => f.filter);
 const selectUiHintsBranch = createSelector(selectTodosFeatures, f => f.uiHints);
+const selectPeopleBranch = createSelector(selectTodosFeatures, f => f.people);
+const selectAssignmentBranch = createSelector(selectTodosFeatures, f => f.assignments);
+
+export const selectAllPeople = createSelector(selectPeopleBranch, f => f.members);
+export const selectAllAssignments = createSelector(selectAssignmentBranch, f => f.assignments);
+
+
 
 
 const { selectAll: selectAllTodoEntity } = fromList.adapter.getSelectors(selectListBranch);
 
-const selectCompletedIds = createSelector(selectCompletedBranch, b => b.ids);
+export const selectCompletedIds = createSelector(selectCompletedBranch, b => b.ids);
+
 
 export const selectFeatureLoaded = createSelector(selectUiHintsBranch, (ui) => ui.listLoaded);
 
@@ -77,6 +91,21 @@ export const selectTodoList = createSelector(selectButtonFilteredList, selectCus
     } else {
       return todos;
     }
+  });
+export const selectCompletedAssignments = createSelector(selectCompletedIds, selectAllAssignments,
+  (completedIds, assignments) => {
+    return assignments.filter(a => completedIds.includes(a.task.id));
+  });
+
+export const selectAllUnassigned = createSelector(selectAllTodoEntity, selectAllAssignments,
+  (todos, assignments) => {
+    if (assignments.length === 0) {
+      return todos;
+    }
+    const assignIds = assignments.map((a) => a.task);
+    return todos.filter(
+      (todo) => assignIds.includes(todo.id)
+    );
   });
 
 

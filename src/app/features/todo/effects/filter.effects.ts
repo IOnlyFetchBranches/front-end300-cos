@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { createEffect, Actions, ofType } from '@ngrx/effects';
-import { tap, map, filter, switchMap } from 'rxjs/operators';
+import { tap, map, filter, switchMap, catchError } from 'rxjs/operators';
 import * as filterActions from '../actions/filters.actions';
 import { applicationStarted } from 'src/app/actions/app.actions';
 import { FilterOptions } from '../reducers/filter.reducer';
@@ -9,6 +9,7 @@ import { HttpClient } from '@angular/common/http';
 import { TodosResponse } from '../models/interfaces/todos-response.interface';
 import { TodoEntity } from '../reducers/list.reducer';
 import * as listActions from '../actions/list.actions';
+import { of } from 'rxjs';
 
 @Injectable()
 export class FilterEffects {
@@ -27,7 +28,10 @@ export class FilterEffects {
               description: todo.description
             } as TodoEntity));
             return listActions.todosLoadedOk({ completedIds, todos: todoEntities });
-          })
+          }),
+          catchError(
+            err => of(listActions.todosLoadedErr(
+              { message: `Failed to load: Server did not respond okay, or did not respond at all! exact err:${err.error};` }))),
         )
       )
     ));
@@ -45,7 +49,7 @@ export class FilterEffects {
         map(() => localStorage.getItem('buttonFilter')), // Attempt to get the stored button filter
         filter(f => f !== null), // If it's null we just filter here to stop.
         map(f => f as FilterOptions), // Convert the piped type from the stored string, into a FilterOptions
-        map((filterString: FilterOptions) => filterActions.setFilter({ filterString })) // send a setFilter with that filter to the reducer
+        map((filterString: FilterOptions) => filterActions.setFilter({ filterString })), // send a setFilter with that filter to the reducer
       );
     }
   );

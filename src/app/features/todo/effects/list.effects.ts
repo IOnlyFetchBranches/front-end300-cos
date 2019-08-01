@@ -4,7 +4,7 @@ import { tap, map, filter, switchMap, mergeMap, catchError, concatMap } from 'rx
 import * as filterActions from '../actions/filters.actions';
 import * as appActions from 'src/app/actions/app.actions';
 import { HttpClient } from '@angular/common/http';
-import { loadTodos, addTodoItem, addTodoItemOk, todosAddErr, todoItemCompleted, todoItemCompletedErr, clearCompleted, deleteTodo, deleteTodoErr } from '../actions/list.actions';
+import { loadTodos, addTodoItem, addTodoItemOk, todosAddErr, todoItemCompleted, todoItemCompletedErr, clearCompleted, deleteTodo, deleteTodoErr, deleteTodoOk, todoItemCompletedOk } from '../actions/list.actions';
 import { TodoEntity } from '../reducers/list.reducer';
 import { environment } from 'src/environments/environment';
 import { of, EMPTY, Observable } from 'rxjs';
@@ -17,14 +17,20 @@ export class ListEffects {
   $deleteTodo = createEffect(() =>
     this.$actions.pipe(
       ofType(deleteTodo),
-      concatMap(
-        action => this.client.delete(`${environment.todosUrl}/${action.item.id}`).pipe(
-          filter(x => false),
-          catchError(err => of<any>(deleteTodoErr({ item: action.item, message: err })))
+      concatMap((action) => this.client.delete(`${environment.todosUrl}/${action.item.id}`).pipe(
+        map(response => {
+          return deleteTodoOk({ item: action.item });
+        }),
+        catchError(
+          err => of(
+            deleteTodoErr({
+              item: action.item,
+              message: `Failed to delete ${action.item.description} from your list. err: ${err.error} `
+            }))
         )
       )
-    )
-    , { dispatch: true });
+      )
+    ));
   $clearCompleted = createEffect(
     () => {
       return this.$actions.pipe(
@@ -39,12 +45,17 @@ export class ListEffects {
       switchMap(
         (action) => {
           return this.client.put(`${environment.todosUrl}/completed/${action.item.id}`, action.item).pipe(
-            catchError((err) => of(todoItemCompletedErr({ item: action.item })))
+            map((response) => {
+              return todoItemCompletedOk({ item: action.item });
+            }),
+            catchError(
+              (err) => of(
+                todoItemCompletedErr(
+                  { item: action.item, message: `Failed to mark "${action.item.description}" as completed. err: ${err.error}` })))
           );
         }
       )
-    ), { dispatch: false }
-  );
+    ));
   $saveTodo = createEffect(
     () => (
       this.$actions.pipe(
@@ -54,7 +65,7 @@ export class ListEffects {
           (orgAction) => this.client.post<TodoEntity>(environment.todosUrl, { description: orgAction.entity.description })
             .pipe(
               map(response => addTodoItemOk({ oldId: orgAction.entity.id, entity: response })),
-              catchError((err) => of(todosAddErr({ failedId: orgAction.entity.id, message: err.error })))
+              catchError((err) => of(todosAddErr({ failedId: orgAction.entity.id, message: `Failed to save todo. err: ${err.error}` })))
             )
         )
       )

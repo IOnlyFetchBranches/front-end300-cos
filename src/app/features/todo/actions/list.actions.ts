@@ -31,7 +31,7 @@ export const todoItemCompletedOk = createAction(
 
 export const todoItemCompletedErr = createAction(
   '[todosfeature] todo item completed err',
-  props<{ item: TodoEntity }>()
+  props<{ item: TodoEntity, message: string }>()
 );
 
 export const clearCompleted = createAction(
@@ -53,7 +53,7 @@ export const deleteTodo = createAction(
 );
 export const deleteTodoErr = createAction(
   '[todosfeature] delete todo err',
-  props<{ item: TodoEntity, message: any }>()
+  props<{ item: TodoEntity, message: string }>()
 );
 export const deleteTodoOk = createAction(
   '[todosfeature] delete todo ok',
@@ -62,6 +62,10 @@ export const deleteTodoOk = createAction(
 export const todosLoadedOk = createAction(
   '[todosfeature] todos loaded ok',
   props<{ completedIds: string[], todos: TodoEntity[] }>()
+);
+export const todosLoadedErr = createAction(
+  '[todosfeature] todos loaded err',
+  props<{ message: string }>()
 );
 export const todosAddErr = createAction(
   '[todosfeature] todo add err',

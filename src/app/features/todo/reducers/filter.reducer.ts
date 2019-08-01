@@ -13,7 +13,11 @@ export const initialState: FilterState = {
   customFilter: null
 };
 
-export const reducer = createReducer(
+const myReducer = createReducer(
   initialState,
   on(actions.setFilter, (state, action) => tassign(state, { listFilter: action.filterString })),
   on(actions.filterWithString, (state, action) => tassign(state, { customFilter: action.userInput })));
+
+export function reducer(state: FilterState = initialState, action): FilterState {
+  return myReducer(state, action);
+}
