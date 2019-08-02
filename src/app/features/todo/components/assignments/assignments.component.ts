@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { addPerson } from '../../actions/people.actions';
 import { Store } from '@ngrx/store';
 import { TodosState, selectAllUnassigned, selectAllAssignments, selectAllPeople, selectCompletedAssignments } from '../../reducers';
-import { Observable } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { TodoEntity } from '../../reducers/list.reducer';
 import { Assignment } from '../../models/assignment.model';
 import { Person } from '../../models/person.model';
@@ -47,10 +47,13 @@ export class AssignmentsComponent implements OnInit {
     input.focus();
   }
 
-  selectOption(assignee: string, input: HTMLInputElement) {
+  selectOption(assignee: string, input: string) {
     const selId = input;
     console.log('Selected ' + selId);
-    this.taskSelections[`${assignee}`] = selId;
+    const sub = this.$unassigned.pipe(
+      map((x) => x.find(y => y.id === selId)),
+    ).subscribe((x) => this.taskSelections[`${assignee}`] = x);
+    sub.unsubscribe();
   }
   assignTask(assignee: string) {
     if (!this.taskSelections.hasOwnProperty(assignee)) {
